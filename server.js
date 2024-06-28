@@ -213,11 +213,15 @@ app.get('/panner',(req,res)=>{
 const express = require('express')
 const app = express()
 const db = require('./db.js');
-
+require('dotenv').config();///using .env to hide sensitive information
 ///Here we are using body parser ----whose basic function is to extract usefull information from the data and send it to req.dody
 
 const bodyParser = require('body-parser'); 
 app.use(bodyParser.json()); //req.body
+const PORT = process.env.PORT || 3000  ////this is used to use PORT provided by local environment 
+
+///using .env to hide sensitive information
+require('dotenv').config();
 
 ///import person model
 
@@ -239,7 +243,7 @@ app.use('/person',personRoutes);
 const menuRoutes = require("./routes/menuRoutes.js");
 app.use('/menu',menuRoutes);/////here /menu is written do we don't have to define it any where other
 
-app.listen(3000, ( )=>{
+app.listen(PORT, ( )=>{
     console.log("listening to port 3000 ");
 })
 
