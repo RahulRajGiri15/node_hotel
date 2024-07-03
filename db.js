@@ -9,6 +9,7 @@ mongoose.connect(mongoURL,{
     // useNewUrlParser:true,
     // useUnifiedTopology:true
 })
+    
 */
 
 
@@ -16,7 +17,7 @@ mongoose.connect(mongoURL,{
 const mongoose = require('mongoose');
 require('dotenv').config();
 const MONGODBURL_ONLINE = process.env.MONGODBURL_ONLINE_DATA;
-//const MONGODB_OFFLINE = process.env.MONGODB_LOCAL;
+const MONGODB_OFFLINE = process.env.MONGODB_LOCAL;
 
 //mongoose.connect('mongodb://localhost:27017/hotels');
 //mongoose.connect("mongodb+srv://hoteluser:india6626@hotel.v1gh4on.mongodb.net/?retryWrites=true&w=majority&appName=hotel");
@@ -45,3 +46,9 @@ db.on('disconnected', ()=>{
 module.exports =db;
 
 
+/*
+//////////Errors faced during programing ///////
+when you are deploying server in this  that while making server always make 
+access from everyone ---set it to 
+
+*/

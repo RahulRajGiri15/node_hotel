@@ -206,30 +206,80 @@ app.get('/panner',(req,res)=>{
 */
 
 
-
+// code in which authcation is in this server page
 
 ///get-----it is used in server to basically revtive the information
 
 const express = require('express')
 const app = express()
 const db = require('./db.js');
+//const {jwtAuthMiddleware,generateToken} = require('./jwt.js')
 require('dotenv').config();///using .env to hide sensitive information
-///Here we are using body parser ----whose basic function is to extract usefull information from the data and send it to req.dody
+////pasport ---- it is used to authenticate ----
+///pasport.local startegy ---it is basically authenticate through username and password 
+const passport = require('passport');
+const LocalStrategy= require('passport-local').Strategy;
+passport .initialize();
 
+passport.use(new LocalStrategy(async (USERNAME, PASSWORD, done)=>{ /////verifiction function (user,pass,done)
+        ////write authentication logic here 
+        try {
+            //console.log("Crediticals recevied:",USERNAME,PASSWORD);
+            const user = await Person.findOne({username: USERNAME}); //////here we check weather the provided username is same as actual username. 
+            if(!user)
+                return done(null ,false,{message:"incorrect username."});
+            const isPasswordMatch = await user.comparePassword(PASSWORD);
+            if(isPasswordMatch){
+                return done (null, user);
+            }
+            else{
+                return done (null ,false,{message:"incorrect password."});
+            }
+            
+        } catch (error) {
+            return done (error);
+        }
+}));
+
+
+///Here we are using body parser ----whose basic function is to extract usefull information from the data and send it to req.dody
 const bodyParser = require('body-parser'); 
 app.use(bodyParser.json()); //req.body
-const PORT = process.env.PORT || 3000  ////this is used to use PORT provided by local environment 
-
 ///using .env to hide sensitive information
 require('dotenv').config();
+const PORT = process.env.PORT || 3000  ////this is used to use PORT provided by local environment or if no port is provided than use the local PORT 3000
+
+
+
+/////////////////////////////Midleware Function//////////////////////
+///midleware is between the client and server ---it taked
+const logRequest =(req ,res ,next ) =>{
+    console.log(`[${new Date().toLocaleString()}] Request made to: ${req.originalUrl}`);
+    next();/////next is very important as through this we move to next line of code ////next is a callback function 
+};
+
+app.use(logRequest);
+
 
 ///import person model
 
 //const menu = require('./models/menu.js');  
 //const MenuItem = require('./models/menu.js');  we are already uing them in router files 
 
-app.get('/',function(req,res){
-    res.send("hello this is my first server response");
+// app.get('/',passport.authenticate('local',{session:false}), function(req,res){
+//     res.send("hello this is my first server response");
+// })
+
+// app.use(passport.initialize()); 
+//app.get('/', passport.authenticate('local', { session: false }), function (req, res) {
+//      res.send('Welcome to our Hotel'); 
+//     })
+
+const localAuthMiddleware =passport.authenticate('local', { session: false }) ///////by declearing this function we require username and password to access the file 
+
+
+app.get('/', localAuthMiddleware, function (req, res) {  /////////Now to access / we need username and password
+    res.send('Welcome to our Hotel'); 
 })
 
 ///POST route to add a person
@@ -238,12 +288,18 @@ app.get('/',function(req,res){
 
 ////Importing router files ////and using them 
 const personRoutes = require('./routes/personRoutes.js');
+///app.use('/person', localAuthMiddleware,personRoutes);
 app.use('/person',personRoutes);
 
 const menuRoutes = require("./routes/menuRoutes.js");
 app.use('/menu',menuRoutes);/////here /menu is written do we don't have to define it any where other
 
+const Person = require('./models/person.js');
+const { Strategy } = require('passport-local');
+
 app.listen(PORT, ( )=>{
     console.log("listening to port 3000 ");
 })
+
+
 
